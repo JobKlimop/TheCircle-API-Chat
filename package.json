@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/JobKlimop/TheCircle-API-Chat#readme",
   "dependencies": {
+    "mongoose": "^5.1.4",
     "websocket": "^1.0.26"
   }
 }
