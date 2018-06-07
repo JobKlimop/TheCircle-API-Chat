@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const MessageScheme = new Schema({
+const MessageSchema = new Schema({
 	content: {
 		type: String,
 		required: [true, 'A comment must have content.']
@@ -16,6 +16,6 @@ const MessageScheme = new Schema({
 	}
 });
 
-const Message = mongoose.model('message', MessageScheme);
+const Message = mongoose.model('message', MessageSchema);
 
 module.exports = Message;
