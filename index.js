@@ -1,11 +1,41 @@
+const Chatroom = require('./models/chatroom');
+const Message = require('./models/message');
 let webSocketServer = require('websocket').server;
 let http = require('http');
+let schedule = require('node-schedule');
+const mongoose = require('mongoose');
+const env = require('./config/env');
 
 let webSocketsServerPort = 1337;
 
 let history = [];
 let cache = [];
 let clients = [];
+
+mongoose.Promise = global.Promise;
+if (process.env.NODE_ENV !== 'test') {
+	mongoose.connect('mongodb://localhost/the_circle');
+}
+
+Chatroom.create({owner: 'testuser', messages: []});
+
+let uploadCache = schedule.scheduleJob('* * * * *', function () {
+    if (cache.length > 0) {
+		Chatroom.findOne({owner: 'testuser'})
+			.then((chatroom) => {
+				for (let i = 0; i < cache.length; i++) {
+                chatroom.messages.push(cache[i]);
+				}
+				return chatroom;
+			})
+            .then((updated_chatroom) => {
+		        return Chatroom.findOneAndUpdate({owner: 'testuser'}, updated_chatroom);
+            })
+            .then(() => {
+		        cache = [];
+            })
+	}
+});
 
 let server = http.createServer(function (request, response) {
 });

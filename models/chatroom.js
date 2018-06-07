@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const MessageSchema = require('message');
+const MessageSchema = require('./message');
 
 const ChatroomSchema = new Schema({
 	owner: {
