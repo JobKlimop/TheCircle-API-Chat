@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>websocket_test</title>
+    <script>
+        let connection = new WebSocket('ws://127.0.0.1:1337');
+
+        let username = "Henk";
+
+        connection.onopen = function () {
+            console.log("Connection open");
+            //Backend verwacht als eerste message de username van een gebruiker.
+            connection.send(username);
+
+            //Test message, dit moet door de gebruiker ingevuld worden.
+            connection.send("Dit is een message");
+        };
+
+        connection.onmessage = function (message) {
+            //Ontvang een message en log het
+            let json = JSON.parse(message.data);
+            console.log(json.data);
+        };
+
+        connection.onerror = function (error) {
+            console.error(error);
+        };
+    </script>
+</head>
+<body>
+
+</body>
+</html>
