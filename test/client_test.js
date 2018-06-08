@@ -2,6 +2,8 @@ let socket = require('socket.io-client')('http://localhost:3000');
 
 socket.on('connect', function () {
 	console.log("Connected");
+	socket.emit('username', 'Henk');
+    socket.emit('room', 'test-room');
 	socket.emit('message', 'Henk', 'Dit is een message.');
 });
 

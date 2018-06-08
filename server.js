@@ -6,14 +6,14 @@ const sticky = require('sticky-session');
 
 const port = process.env.PORT || 3000;
 
-const server = http.createServer(function (req, res) {
+const server = http.createServer((req, res) => {
 	res.end('worker: ' + cluster.worker.id);
 });
 
 if (!sticky.listen(server, port)) {
 	// Master code
-	server.once('listening', function () {
-		console.log('server started on 3000 port');
+	server.once('listening', () => {
+		console.log('server started on port ' + port);
 	});
 } else {
 	// Worker code
@@ -21,11 +21,28 @@ if (!sticky.listen(server, port)) {
 
 	//io.adapter(sio_redis({host: 'localhost', port: 6379}));
 
-	io.on('connection', function (socket) {
+	io.on('connection', (socket) => {
+		let userName = false;
+		let roomName = false;
+
 		console.log('user connected on worker #' + cluster.worker.id);
-		socket.emit('message', 'test test test message');
-		socket.on('message', function (user, msg) {
+
+		socket.on('username', (user) => {
+			userName = user;
+			console.log('user supplied username ' + userName);
+		});
+
+		socket.on('room', (room) => {
+			socket.join(room);
+			roomName = room;
+			console.log('user joined room ' + roomName);
+		});
+
+		socket.on('message', (user, msg) => {
 			console.log(user + ': ' + msg);
 		});
+		setTimeout(() => {
+			io.to('test-room').emit('message', 'dit moet naar iedereen in test-room');
+		}, 5000);
 	});
 }
