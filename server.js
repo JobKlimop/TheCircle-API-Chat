@@ -19,7 +19,7 @@ if (!sticky.listen(server, port)) {
 	// Worker code
 	const io = sio(server);
 
-	//io.adapter(sio_redis({host: 'localhost', port: 6379}));
+	io.adapter(sio_redis({host: '192.168.99.100', port: 6379}));
 
 	io.on('connection', (socket) => {
 		let userName = false;
@@ -41,8 +41,9 @@ if (!sticky.listen(server, port)) {
 		socket.on('message', (user, msg) => {
 			console.log(user + ': ' + msg);
 		});
+
 		setTimeout(() => {
 			io.to('test-room').emit('message', 'dit moet naar iedereen in test-room');
-		}, 5000);
+		}, 1000);
 	});
 }
