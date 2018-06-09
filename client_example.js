@@ -1,5 +1,5 @@
 // Connect to socket.io server.
-let socket = require("socket.io-client")("http://localhost:3000");
+let socket = require("socket.io-client")("wss://the-circle-chat.herokuapp.com/", { transports: ['websocket'], rejectUnauthorized: false });
 
 addEventHandlers();
 
