@@ -5,6 +5,7 @@ const redis = require("redis");
 const http = require("http");
 const sticky = require("sticky-session");
 const ip = require("ip");
+const fs = require("fs");
 
 const host = process.env.HOST || ip.address();
 const dyno = process.env.DYNO || false;
@@ -14,7 +15,11 @@ const redisPort = process.env.REDIS_PORT || 6379;
 const redisPass = process.env.REDIS_PASS || false;
 
 const server = http.createServer((req, res) => {
-	res.end("worker: " + cluster.worker.id);
+	fs.readFile('the-circle.html', (err, data) => {
+		res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
+		res.write(data);
+		res.end();
+	});
 });
 
 if (!sticky.listen(server, port)) {
