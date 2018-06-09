@@ -1,5 +1,11 @@
+const host = "ws://localhost:3000";
+//const host = "ws://the-circle-chat.herokuapp.com/";
+
 // Connect to socket.io server.
-let socket = require("socket.io-client")("wss://the-circle-chat.herokuapp.com/", { transports: ['websocket'], rejectUnauthorized: false });
+let socket = require("socket.io-client")(host, {
+	transports: ['websocket'],
+	rejectUnauthorized: false
+});
 
 addEventHandlers();
 
@@ -17,6 +23,7 @@ function addEventHandlers() {
 		sendMessage("room-1", "dit is een message naar room 1");
 		sendMessage("room-2", "dit is een message naar room 2");
 		getConnectionInfo();
+		getClientCount("room-1");
 	});
 
 	// Fires after a connection error.
@@ -75,8 +82,8 @@ function addEventHandlers() {
 
 	// Fires when receiving a message from the server.
 	// contains the room the message is meant for, the message sender & the message itself
-	socket.on("message", (room, user, message) => {
-		console.log(room + " " + user + ": " + message);
+	socket.on("message", (message) => {
+		console.log(message.timestamp + " " + message.room + " " + message.user + ": " + message.content);
 	});
 
 	// Fires when receiving connection info.
@@ -104,11 +111,19 @@ function addEventHandlers() {
 	socket.on("username_set", (username) => {
 		console.log("Username set to " + username);
 	});
+
+	// Fires after receiving the amount of clients connected to a room.
+	// Response contains the name of the room and the amount of clients connected to it.
+	socket.on("client_count", (response) => {
+		console.log(response.room + " has " + response.numberOfClients + " clients connected");
+	});
 }
 
 // Send a message to a room by emitting the "message" event and including the name of the room and your message.
+// You can only send messages after providing a username by emitting the "set_username" event & by having joined the
+// room you are sending the message to.
 function sendMessage(room, message) {
-	socket.emit("message", room, message);
+	socket.emit("message", {room: room, content: message});
 }
 
 // Before you can send messages, you need to provide a username.
@@ -132,4 +147,9 @@ function leaveRoom(room) {
 // Emit a "connection_info" event to receive information about the connection (username, rooms joined, etc.).
 function getConnectionInfo() {
 	socket.emit("connection_info");
+}
+
+// Emit a "client_count" event to request the amount of connected clients of a given room you are in.
+function getClientCount(room) {
+	socket.emit("client_count", room);
 }

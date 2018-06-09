@@ -16,7 +16,7 @@ const redisPass = process.env.REDIS_PASS || false;
 
 const server = http.createServer((req, res) => {
 	fs.readFile('the-circle.html', (err, data) => {
-		res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
+		res.writeHead(200, {'Content-Type': 'text/html', 'Content-Length': data.length});
 		res.write(data);
 		res.end();
 	});
@@ -32,11 +32,11 @@ if (!sticky.listen(server, port)) {
 	const io = socketio(server);
 
 	if (process.env.DEV) {
-		io.adapter(redisAdapter({ host: redisHost, port: redisPort }));
+		io.adapter(redisAdapter({host: redisHost, port: redisPort}));
 	} else {
-		const pub = redis.createClient(redisPort, redisHost, { auth_pass: redisPass });
-		const sub = redis.createClient(redisPort, redisHost, { auth_pass: redisPass });
-		io.adapter(redisAdapter({ pubClient: pub, subClient: sub }));
+		const pub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
+		const sub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
+		io.adapter(redisAdapter({pubClient: pub, subClient: sub}));
 	}
 
 	io.on("connection", (socket) => {
@@ -51,7 +51,7 @@ if (!sticky.listen(server, port)) {
 				dyno: dyno,
 				worker: cluster.worker.id
 			};
-
+			console.log("Sent " + (user || "socketid " + socket.id) + " info about the connection");
 			socket.emit("connection_info", info);
 		});
 
@@ -80,11 +80,31 @@ if (!sticky.listen(server, port)) {
 			}
 		});
 
-		socket.on("message", (room, msg) => {
-			index = rooms.indexOf(room);
+		socket.on("message", (msg) => {
+			index = rooms.indexOf(msg.room);
 			if (index > -1 && user) {
-				console.log(room + " " + user + ": " + msg);
-				io.in(room).emit('message', room, user, msg);
+				const obj = {
+					user: user,
+					room: msg.room,
+					timestamp: Date.now(),
+					content: msg.content
+				};
+				console.log(msg.room + " " + user + ": " + msg.content);
+				io.in(msg.room).emit("message", obj);
+			}
+		});
+
+		socket.on("client_count", (room) => {
+			index = rooms.indexOf(room);
+			if (index > -1) {
+				io.in(room).clients((err, clients) => {
+					const obj = {
+						room: room,
+						numberOfClients: clients.length
+					};
+					console.log("Sent " + (user || "socketid " + socket.id) + " the client count for room " + room);
+					socket.emit("client_count", obj);
+				});
 			}
 		});
 	});
