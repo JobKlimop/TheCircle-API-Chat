@@ -86,7 +86,7 @@ function addEventHandlers() {
 	// 		server      server url the user is connected to
 	// 		dyno        heroku dyno the user is connected to
 	// 		worker      worker the user is connected to
-	socket.on("connection info", (info) => {
+	socket.on("connection_info", (info) => {
 		console.log(info);
 	});
 
