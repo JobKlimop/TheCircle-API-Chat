@@ -31,9 +31,9 @@ if (!sticky.listen(server, port)) {
 	// Worker code
 	const io = socketio(server);
 
-	if (process.env.DEV) {
+	if (process.env.NODE_ENV === "development") {
 		io.adapter(redisAdapter({host: redisHost, port: redisPort}));
-	} else {
+	} else if (process.env.NODE_ENV === "production") {
 		const pub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
 		const sub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
 		io.adapter(redisAdapter({pubClient: pub, subClient: sub}));
@@ -51,37 +51,33 @@ if (!sticky.listen(server, port)) {
 				dyno: dyno,
 				worker: cluster.worker.id
 			};
-			console.log("Sent " + (user || "socketid " + socket.id) + " info about the connection");
 			socket.emit("connection_info", info);
 		});
 
 		socket.on("set_username", (username) => {
-			console.log((user || "socketid " + socket.id) + " set username to " + username);
 			user = username;
 			socket.emit("username_set", user);
 		});
 
 		socket.on("join_room", (room) => {
-			index = rooms.indexOf(room);
+			const index = rooms.indexOf(room);
 			if (index === -1) {
 				socket.join(room);
 				rooms.push(room);
-				console.log((user || "socketid " + socket.id) + " joined room " + room);
 				socket.emit("room_joined", room);
 			}
 		});
 
 		socket.on("leave_room", (room) => {
-			index = rooms.indexOf(room);
+			const index = rooms.indexOf(room);
 			if (index > -1) {
 				rooms.splice(index, 1);
-				console.log((user || "socketid " + socket.id) + " left room " + room);
 				socket.emit("room_left", room);
 			}
 		});
 
 		socket.on("message", (msg) => {
-			index = rooms.indexOf(msg.room);
+			const index = rooms.indexOf(msg.room);
 			if (index > -1 && user) {
 				const obj = {
 					user: user,
@@ -89,20 +85,18 @@ if (!sticky.listen(server, port)) {
 					timestamp: Date.now(),
 					content: msg.content
 				};
-				console.log(msg.room + " " + user + ": " + msg.content);
 				io.in(msg.room).emit("message", obj);
 			}
 		});
 
 		socket.on("client_count", (room) => {
-			index = rooms.indexOf(room);
+			const index = rooms.indexOf(room);
 			if (index > -1) {
 				io.in(room).clients((err, clients) => {
 					const obj = {
 						room: room,
 						numberOfClients: clients.length
 					};
-					console.log("Sent " + (user || "socketid " + socket.id) + " the client count for room " + room);
 					socket.emit("client_count", obj);
 				});
 			}
