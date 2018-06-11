@@ -1,5 +1,6 @@
 'use strict';
 
+const winston = require('winston');
 const cluster = require('cluster');
 const socketio = require('socket.io');
 const redisAdapter = require('socket.io-redis');
@@ -24,6 +25,27 @@ const server = http.createServer((req, res) => {
 	});
 });
 
+require('winston-mongodb');
+const options = {
+	level: 'info',
+	silent: false,
+	db: 'mongodb://test:test123@ds161148.mlab.com:61148/the-circle-chat-server-logging',
+	options: {poolSize: 2, autoReconnect: true},
+	collection: 'log',
+	storeHost: true,
+	label: 'chat-server',
+	name: 'transport-1',
+	capped: false,
+	cappedSize: 10000000,
+	cappedMax: 10000000,
+	tryReconnect: false,
+	decolorize: false,
+	expireAfterSeconds: 0
+};
+
+// winston.add(winston.transports.File, { filename: 'test.log' });
+winston.add(winston.transports.MongoDB, options);
+
 if (!sticky.listen(server, port)) {
 	// Master code
 	server.once('listening', () => {
@@ -44,6 +66,8 @@ if (!sticky.listen(server, port)) {
 	io.on('connection', (socket) => {
 		let user = false;
 		let rooms = [];
+
+		winston.log('info', socket.id + ' connected on worker #' + cluster.worker.id);
 
 		socket.on('connection_info', () => {
 			const info = {
