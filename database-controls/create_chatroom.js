@@ -5,15 +5,19 @@ function createChatroom(owner) {
 	newChatroom.owner = owner;
 
 	return Chatroom.findOne({owner: owner})
-		.then((dbResponse) => {
-			if (dbResponse === null) {
+		.then((dbChatroom) => {
+			if (dbChatroom === null) {
 				return Chatroom.create(newChatroom);
 			} else {
-				return dbResponse;
+				return dbChatroom;
 			}
 		})
+		.then(() => {
+			return true;
+		})
 		.catch((error) => {
-			return error;
+			console.log(error);
+			return false;
 		});
 }
 
