@@ -1,13 +1,16 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const MessageSchema = require('message');
 
 const ChatroomSchema = new Schema({
 	owner: {
-		type: String,
+		type: Schema.Types.ObjectId,
+		ref: 'user',
 		required: [true, 'A chatroom must have an owner.']
 	},
-	messages: [MessageSchema]
+	messages: [{
+		type: Schema.Types.ObjectId,
+		ref: 'message'
+	}]
 });
 
 const Chatroom = mongoose.model('chatroom', ChatroomSchema);

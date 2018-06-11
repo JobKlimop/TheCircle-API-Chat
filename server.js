@@ -1,16 +1,18 @@
-const cluster = require("cluster");
-const socketio = require("socket.io");
-const redisAdapter = require("socket.io-redis");
-const redis = require("redis");
-const http = require("http");
-const sticky = require("sticky-session");
-const ip = require("ip");
-const fs = require("fs");
+'use strict';
+
+const cluster = require('cluster');
+const socketio = require('socket.io');
+const redisAdapter = require('socket.io-redis');
+const redis = require('redis');
+const http = require('http');
+const sticky = require('sticky-session');
+const ip = require('ip');
+const fs = require('fs');
 
 const host = process.env.HOST || ip.address();
 const dyno = process.env.DYNO || false;
 const port = process.env.PORT || 3000;
-const redisHost = process.env.REDIS_HOST || "localhost";
+const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = process.env.REDIS_PORT || 6379;
 const redisPass = process.env.REDIS_PASS || false;
 
@@ -24,26 +26,26 @@ const server = http.createServer((req, res) => {
 
 if (!sticky.listen(server, port)) {
 	// Master code
-	server.once("listening", () => {
-		console.log("server started on port " + port);
+	server.once('listening', () => {
+		console.log('server started on port ' + port);
 	});
 } else {
 	// Worker code
 	const io = socketio(server);
 
-	if (process.env.DEV) {
+	if (process.env.NODE_ENV === 'development') {
 		io.adapter(redisAdapter({host: redisHost, port: redisPort}));
-	} else {
+	} else if (process.env.NODE_ENV === 'production') {
 		const pub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
 		const sub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
 		io.adapter(redisAdapter({pubClient: pub, subClient: sub}));
 	}
 
-	io.on("connection", (socket) => {
+	io.on('connection', (socket) => {
 		let user = false;
 		let rooms = [];
 
-		socket.on("connection_info", () => {
+		socket.on('connection_info', () => {
 			const info = {
 				user: user,
 				rooms: rooms,
@@ -51,37 +53,33 @@ if (!sticky.listen(server, port)) {
 				dyno: dyno,
 				worker: cluster.worker.id
 			};
-			console.log("Sent " + (user || "socketid " + socket.id) + " info about the connection");
-			socket.emit("connection_info", info);
+			socket.emit('connection_info', info);
 		});
 
-		socket.on("set_username", (username) => {
-			console.log((user || "socketid " + socket.id) + " set username to " + username);
+		socket.on('set_username', (username) => {
 			user = username;
-			socket.emit("username_set", user);
+			socket.emit('username_set', user);
 		});
 
-		socket.on("join_room", (room) => {
-			index = rooms.indexOf(room);
+		socket.on('join_room', (room) => {
+			const index = rooms.indexOf(room);
 			if (index === -1) {
 				socket.join(room);
 				rooms.push(room);
-				console.log((user || "socketid " + socket.id) + " joined room " + room);
-				socket.emit("room_joined", room);
+				socket.emit('room_joined', room);
 			}
 		});
 
-		socket.on("leave_room", (room) => {
-			index = rooms.indexOf(room);
+		socket.on('leave_room', (room) => {
+			const index = rooms.indexOf(room);
 			if (index > -1) {
 				rooms.splice(index, 1);
-				console.log((user || "socketid " + socket.id) + " left room " + room);
-				socket.emit("room_left", room);
+				socket.emit('room_left', room);
 			}
 		});
 
-		socket.on("message", (msg) => {
-			index = rooms.indexOf(msg.room);
+		socket.on('message', (msg) => {
+			const index = rooms.indexOf(msg.room);
 			if (index > -1 && user) {
 				const obj = {
 					user: user,
@@ -89,21 +87,19 @@ if (!sticky.listen(server, port)) {
 					timestamp: Date.now(),
 					content: msg.content
 				};
-				console.log(msg.room + " " + user + ": " + msg.content);
-				io.in(msg.room).emit("message", obj);
+				io.in(msg.room).emit('message', obj);
 			}
 		});
 
-		socket.on("client_count", (room) => {
-			index = rooms.indexOf(room);
+		socket.on('client_count', (room) => {
+			const index = rooms.indexOf(room);
 			if (index > -1) {
 				io.in(room).clients((err, clients) => {
 					const obj = {
 						room: room,
 						numberOfClients: clients.length
 					};
-					console.log("Sent " + (user || "socketid " + socket.id) + " the client count for room " + room);
-					socket.emit("client_count", obj);
+					socket.emit('client_count', obj);
 				});
 			}
 		});
