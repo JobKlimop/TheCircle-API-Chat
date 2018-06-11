@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "dev": "set NODE_ENV=development&& nodemon server.js",
     "dev_debug": "set NODE_ENV=development&& set DEBUG=*&& nodemon server.js",
     "dev_debug_socket": "set NODE_ENV=development&& set DEBUG=socket.io:socket*&& nodemon server.js"
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "debug": "^3.1.0",
+    "mocha": "^5.2.0",
     "nodemon": "^1.17.5",
     "socket.io-client": "^2.1.1"
   },
