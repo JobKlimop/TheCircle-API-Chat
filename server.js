@@ -1,21 +1,14 @@
 'use strict';
 
-const winston = require('winston');
 const cluster = require('cluster');
 const socketio = require('socket.io');
 const redisAdapter = require('socket.io-redis');
 const redis = require('redis');
 const http = require('http');
 const sticky = require('sticky-session');
-const ip = require('ip');
 const fs = require('fs');
-
-const host = process.env.HOST || ip.address();
-const dyno = process.env.DYNO || false;
-const port = process.env.PORT || 3000;
-const redisHost = process.env.REDIS_HOST || 'localhost';
-const redisPort = process.env.REDIS_PORT || 6379;
-const redisPass = process.env.REDIS_PASS || false;
+const winston = require('./logging.js');
+const env = require('./env.js');
 
 const server = http.createServer((req, res) => {
 	fs.readFile('the-circle.html', (err, data) => {
@@ -25,41 +18,20 @@ const server = http.createServer((req, res) => {
 	});
 });
 
-require('winston-mongodb');
-const options = {
-	level: 'info',
-	silent: false,
-	db: 'mongodb://test:test123@ds161148.mlab.com:61148/the-circle-chat-server-logging',
-	options: {poolSize: 2, autoReconnect: true},
-	collection: 'log',
-	storeHost: true,
-	label: 'chat-server',
-	name: 'transport-1',
-	capped: false,
-	cappedSize: 10000000,
-	cappedMax: 10000000,
-	tryReconnect: false,
-	decolorize: false,
-	expireAfterSeconds: 0
-};
-
-// winston.add(winston.transports.File, { filename: 'test.log' });
-winston.add(winston.transports.MongoDB, options);
-
-if (!sticky.listen(server, port)) {
+if (!sticky.listen(server, env.port)) {
 	// Master code
 	server.once('listening', () => {
-		console.log('server started on port ' + port);
+		console.log('server started on port ' + env.port);
 	});
 } else {
 	// Worker code
 	const io = socketio(server);
 
 	if (process.env.NODE_ENV === 'development') {
-		io.adapter(redisAdapter({host: redisHost, port: redisPort}));
+		io.adapter(redisAdapter({host: env.redisHost, port: env.redisPort}));
 	} else if (process.env.NODE_ENV === 'production') {
-		const pub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
-		const sub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
+		const pub = redis.createClient(env.redisPort, env.redisHost, {auth_pass: env.redisPass});
+		const sub = redis.createClient(env.redisPort, env.redisHost, {auth_pass: env.redisPass});
 		io.adapter(redisAdapter({pubClient: pub, subClient: sub}));
 	}
 
@@ -67,22 +39,29 @@ if (!sticky.listen(server, port)) {
 		let user = false;
 		let rooms = [];
 
-		winston.log('info', socket.id + ' connected on worker #' + cluster.worker.id);
-
-		socket.on('connection_info', () => {
-			const info = {
+		function getConnectionInfo() {
+			return {
 				user: user,
 				rooms: rooms,
-				server: host,
-				dyno: dyno,
+				server: env.host,
+				dyno: env.dyno,
 				worker: cluster.worker.id
 			};
+		}
+
+		socket.on('connection_info', () => {
+			const info = getConnectionInfo();
 			socket.emit('connection_info', info);
 		});
 
 		socket.on('set_username', (username) => {
 			user = username;
 			socket.emit('username_set', user);
+			winston.log(
+				'info',
+				(user || '[SocketID ' + socket.id + ']') + ' changed their username to ' + username,
+				getConnectionInfo()
+			);
 		});
 
 		socket.on('join_room', (room) => {
@@ -91,6 +70,11 @@ if (!sticky.listen(server, port)) {
 				socket.join(room);
 				rooms.push(room);
 				socket.emit('room_joined', room);
+				winston.log(
+					'info',
+					(user || '[SocketID ' + socket.id + ']') + ' joined room ' + room,
+					getConnectionInfo()
+				);
 			}
 		});
 
@@ -99,6 +83,11 @@ if (!sticky.listen(server, port)) {
 			if (index > -1) {
 				rooms.splice(index, 1);
 				socket.emit('room_left', room);
+				winston.log(
+					'info',
+					(user || '[SocketID ' + socket.id + ']') + ' left room ' + room,
+					getConnectionInfo()
+				);
 			}
 		});
 
@@ -112,6 +101,11 @@ if (!sticky.listen(server, port)) {
 					content: msg.content
 				};
 				io.in(msg.room).emit('message', obj);
+				winston.log(
+					'info',
+					'Received message from ' + (user || '[SocketID ' + socket.id + ']') + ' for room ' + msg.room,
+					getConnectionInfo()
+				);
 			}
 		});
 
