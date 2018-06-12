@@ -21,3 +21,5 @@ function createUser(name, certificate) {
 			return false;
 		})
 }
+
+module.exports = createUser;
