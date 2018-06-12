@@ -4,21 +4,22 @@ let newChatroom = {owner: '', messages: []};
 function createChatroom(owner) {
 	newChatroom.owner = owner;
 
-	return Chatroom.findOne({owner: owner})
-		.then((dbChatroom) => {
-			if (dbChatroom === null) {
-				return Chatroom.create(newChatroom);
-			} else {
-				return dbChatroom;
-			}
-		})
-		.then(() => {
-			return true;
-		})
-		.catch((error) => {
-			console.log(error);
-			return false;
-		});
+	return new Promise((resolve, reject) => {
+		Chatroom.findOne({_id: owner})
+			.then((dbChatroom) => {
+				if (dbChatroom === null) {
+					return Chatroom.create(newChatroom);
+				} else {
+					return dbChatroom;
+				}
+			})
+			.then((dbChatroom) => {
+				resolve(dbChatroom);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
 }
 
 module.exports = createChatroom;

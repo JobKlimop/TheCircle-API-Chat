@@ -5,21 +5,22 @@ function createUser(name, certificate) {
 	newUser.name = name;
 	newUser.certificate = certificate;
 
-	return User.findOne({name: name})
-		.then((dbUser) => {
-			if (dbUser === null) {
-				return User.create(newUser);
-			} else {
-				return dbUser;
-			}
-		})
-		.then(() => {
-			return true;
-		})
-		.catch((error) => {
-			console.log(error);
-			return false;
-		})
+	return new Promise((resolve, reject) => {
+		User.findOne({_id: name})
+			.then((dbUser) => {
+				if (dbUser === null) {
+					return User.create(newUser);
+				} else {
+					return dbUser;
+				}
+			})
+			.then((dbUser) => {
+				resolve(dbUser);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
 }
 
 module.exports = createUser;
