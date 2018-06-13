@@ -22,23 +22,24 @@ before((done) => {
 		});
 });
 
-xdescribe('Database-controls', () => {
-	// beforeEach((done) => {
-	// 	const { messages, chatrooms, users } = mongoose.connection.collections;
-	// 	const promises = [
-	// 		messages.drop,
-	// 		chatrooms.drop,
-	// 		users.drop
-	// 	];
-	//
-	// 	Promise.all(promises)
-	// 		.then(() => {
-	// 			done();
-	// 		})
-	// 		.catch((error) => {
-	// 			done(error);
-	// 		});
-	// });
+describe('Database-controls', () => {
+	beforeEach((done) => {
+		const { users, messages, chatrooms } = mongoose.connection.collections;
+
+		messages.remove({})
+			.then(() => {
+				return chatrooms.remove({});
+			})
+			.then(() => {
+				return users.remove({});
+			})
+			.then(() => {
+				done();
+			})
+			.catch((error) => {
+				done(error);
+			});
+	});
 
 	it('should save a user successfully.', (done) => {
 		User.findOne({_id: 'TestingUser123'})
@@ -114,9 +115,6 @@ xdescribe('Database-controls', () => {
 
 	it('should save a message succesfully and add it to relevant messages list.', (done) => {
 		let currentDate = Date.now();
-		// let assertMessage = {content: 'Testing message content...', user: 'TestingUser123',
-		// 	chatroom: 'TestingRoom123', timestamp: currentDate,
-		// 	signature: '1A2FC26DC7EA5A2A4748B7CB2B1EF193D96AB2C99F93092F69E63075B28D1278'};
 		let _savedMessage;
 
 		User.create({name: 'TestingUser123', certificate: {certificate: ''}})
