@@ -8,7 +8,7 @@ const http = require('http');
 const sticky = require('sticky-session');
 const fs = require('fs');
 const winston = require('./logging.js');
-const env = require('./env.js');
+const env = require('./env.js').environment;
 
 const server = http.createServer((req, res) => {
 	fs.readFile('the-circle.html', (err, data) => {

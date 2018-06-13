@@ -6,7 +6,7 @@ function createUser(name, certificate) {
 	newUser.certificate = certificate;
 
 	return new Promise((resolve, reject) => {
-		User.findOne({_id: name})
+		User.findById(name)
 			.then((dbUser) => {
 				if (dbUser === null) {
 					return User.create(newUser);

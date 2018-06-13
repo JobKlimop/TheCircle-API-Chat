@@ -5,7 +5,7 @@ function createChatroom(owner) {
 	newChatroom.owner = owner;
 
 	return new Promise((resolve, reject) => {
-		Chatroom.findOne({_id: owner})
+		Chatroom.findById(owner)
 			.then((dbChatroom) => {
 				if (dbChatroom === null) {
 					return Chatroom.create(newChatroom);

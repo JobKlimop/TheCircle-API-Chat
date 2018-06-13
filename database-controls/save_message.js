@@ -15,14 +15,14 @@ function saveMessage(content, user, chatroom, timestamp, signature) {
 		Message.create(newMessage)
 			.then((createdMessage) => {
 				_createdMessage = createdMessage;
-				return Chatroom.findOne({_id: chatroom});
+				return Chatroom.findById(chatroom);
 			})
 			.then((dbChatroom) => {
 				dbChatroom.messages.push(_createdMessage._id);
 				return dbChatroom.save();
 			})
 			.then(() => {
-				return User.findOne({_id: user});
+				return User.findById(user);
 			})
 			.then((dbUser) => {
 				dbUser.messages.push(_createdMessage._id);

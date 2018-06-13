@@ -2,18 +2,31 @@
 
 const ip = require('ip');
 
-const host = process.env.HOST || ip.address();
-const dyno = process.env.DYNO || false;
-const port = process.env.PORT || 3000;
-const redisHost = process.env.REDIS_HOST || 'localhost';
-const redisPort = process.env.REDIS_PORT || 6379;
-const redisPass = process.env.REDIS_PASS || false;
-const logDbHost = process.env.LOGGING_HOST || 'localhost';
-const logDbPort = process.env.LOGGING_PORT || 27017;
-const logDbPass = process.env.LOGGING_PASS || '';
-const logDbUser = process.env.LOGGING_USER || '';
-const logDbName = process.env.LOGGING_NAME || 'loggingdb';
+const environment = {
+	host: process.env.HOST || ip.address(),
+	dyno: process.env.DYNO || false,
+	port: process.env.PORT || 3000,
+	redisHost: process.env.REDIS_HOST || 'localhost',
+	redisPort: process.env.REDIS_PORT || 6379,
+	redisPass: process.env.REDIS_PASS || false,
+	mainDbHost: process.env.MAIN_HOST || 'localhost',
+	mainDbPort: process.env.MAIN_PORT || 27017,
+	mainDbPass: process.env.MAIN_PASS || '',
+	mainDbUser: process.env.MAIN_USER || '',
+	mainDbName: process.env.MAIN_NAME || 'TheCircle',
+	logDbHost: process.env.LOGGING_HOST || 'localhost',
+	logDbPort: process.env.LOGGING_PORT || 27017,
+	logDbPass: process.env.LOGGING_PASS || '',
+	logDbUser: process.env.LOGGING_USER || '',
+	logDbName: process.env.LOGGING_NAME || 'loggingdb'
+};
+
+const mainDbConnectionUrl = process.env.NODE_ENV === 'production' ?
+	'mongodb://' + environment.mainDbUser + ':' + environment.mainDbPass + '@' + environment.mainDbHost + ':' +
+	environment.mainDbPort + '/' + environment.mainDbName + '' :
+	'mongodb://' + environment.mainDbHost + '/' + environment.mainDbName + '';
 
 module.exports = {
-	host, dyno, port, redisHost, redisPort, redisPass, logDbHost, logDbPort, logDbPass, logDbUser, logDbName
+	environment: environment,
+	mainDbConnectionUrl: mainDbConnectionUrl
 };
