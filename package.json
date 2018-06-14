@@ -5,10 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "mocha",
+    "test": "mocha --exit",
     "dev": "set NODE_ENV=development&& nodemon server.js",
     "dev_debug": "set NODE_ENV=development&& set DEBUG=*&& nodemon server.js",
-    "dev_debug_socket": "set NODE_ENV=development&& set DEBUG=socket.io:socket*&& nodemon server.js"
+    "dev_debug_socket": "set NODE_ENV=development&& set DEBUG=socket.io:socket*&& nodemon server.js",
+    "travis": "NODE_ENV=test node server.js &"
   },
   "repository": {
     "type": "git",
@@ -22,11 +23,14 @@
   "homepage": "https://github.com/JobKlimop/TheCircle-API-Chat#readme",
   "dependencies": {
     "ip": "^1.1.5",
+    "mongodb": "^2.2.35",
     "mongoose": "^5.1.4",
     "redis": "^2.8.0",
     "socket.io": "^2.1.1",
     "socket.io-redis": "^5.2.0",
-    "sticky-session": "^1.1.2"
+    "sticky-session": "^1.1.2",
+    "winston": "^2.4.2",
+    "winston-mongodb": "^3.0.2"
   },
   "devDependencies": {
     "debug": "^3.1.0",
