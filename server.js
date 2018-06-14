@@ -6,15 +6,9 @@ const redisAdapter = require('socket.io-redis');
 const redis = require('redis');
 const http = require('http');
 const sticky = require('sticky-session');
-const ip = require('ip');
 const fs = require('fs');
-
-const host = process.env.HOST || ip.address();
-const dyno = process.env.DYNO || false;
-const port = process.env.PORT || 3000;
-const redisHost = process.env.REDIS_HOST || 'localhost';
-const redisPort = process.env.REDIS_PORT || 6379;
-const redisPass = process.env.REDIS_PASS || false;
+const winston = require('./logging.js');
+const env = require('./env.js').environment;
 
 const server = http.createServer((req, res) => {
 	fs.readFile('the-circle.html', (err, data) => {
@@ -24,20 +18,21 @@ const server = http.createServer((req, res) => {
 	});
 });
 
-if (!sticky.listen(server, port)) {
+if (!sticky.listen(server, env.port)) {
 	// Master code
 	server.once('listening', () => {
-		console.log('server started on port ' + port);
+		console.log('server started on port ' + env.port);
+		console.log('NODE_ENV: ' + process.env.NODE_ENV);
 	});
 } else {
 	// Worker code
 	const io = socketio(server);
 
-	if (process.env.NODE_ENV === 'development') {
-		io.adapter(redisAdapter({host: redisHost, port: redisPort}));
+	if (process.env.NODE_ENV === 'development' || 'test') {
+		io.adapter(redisAdapter({host: env.redisHost, port: env.redisPort}));
 	} else if (process.env.NODE_ENV === 'production') {
-		const pub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
-		const sub = redis.createClient(redisPort, redisHost, {auth_pass: redisPass});
+		const pub = redis.createClient(env.redisPort, env.redisHost, {auth_pass: env.redisPass});
+		const sub = redis.createClient(env.redisPort, env.redisHost, {auth_pass: env.redisPass});
 		io.adapter(redisAdapter({pubClient: pub, subClient: sub}));
 	}
 
@@ -45,20 +40,29 @@ if (!sticky.listen(server, port)) {
 		let user = false;
 		let rooms = [];
 
-		socket.on('connection_info', () => {
-			const info = {
+		function getConnectionInfo() {
+			return {
 				user: user,
 				rooms: rooms,
-				server: host,
-				dyno: dyno,
+				server: env.host,
+				dyno: env.dyno,
 				worker: cluster.worker.id
 			};
+		}
+
+		socket.on('connection_info', () => {
+			const info = getConnectionInfo();
 			socket.emit('connection_info', info);
 		});
 
 		socket.on('set_username', (username) => {
 			user = username;
 			socket.emit('username_set', user);
+			winston.log(
+				'info',
+				(user || '[SocketID ' + socket.id + ']') + ' changed their username to ' + username,
+				getConnectionInfo()
+			);
 		});
 
 		socket.on('join_room', (room) => {
@@ -67,6 +71,11 @@ if (!sticky.listen(server, port)) {
 				socket.join(room);
 				rooms.push(room);
 				socket.emit('room_joined', room);
+				winston.log(
+					'info',
+					(user || '[SocketID ' + socket.id + ']') + ' joined room ' + room,
+					getConnectionInfo()
+				);
 			}
 		});
 
@@ -75,6 +84,11 @@ if (!sticky.listen(server, port)) {
 			if (index > -1) {
 				rooms.splice(index, 1);
 				socket.emit('room_left', room);
+				winston.log(
+					'info',
+					(user || '[SocketID ' + socket.id + ']') + ' left room ' + room,
+					getConnectionInfo()
+				);
 			}
 		});
 
@@ -84,10 +98,18 @@ if (!sticky.listen(server, port)) {
 				const obj = {
 					user: user,
 					room: msg.room,
-					timestamp: Date.now(),
-					content: msg.content
+					timestamp: msg.timestamp,
+					content: msg.content,
+					certificate: msg.certificate,
+					signature: msg.signature
 				};
+				console.log(obj);
 				io.in(msg.room).emit('message', obj);
+				winston.log(
+					'info',
+					'Received message from ' + (user || '[SocketID ' + socket.id + ']') + ' for room ' + msg.room,
+					getConnectionInfo()
+				);
 			}
 		});
 
@@ -101,6 +123,19 @@ if (!sticky.listen(server, port)) {
 					};
 					socket.emit('client_count', obj);
 				});
+			}
+		});
+
+		socket.on('history', (room) => {
+			const index = rooms.indexOf(room);
+			if (index > -1) {
+				//TODO get history from MongoDB
+				let history = [];
+				const obj = {
+					room: room,
+					history: history
+				};
+				socket.emit('history', obj);
 			}
 		});
 	});

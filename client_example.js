@@ -23,6 +23,7 @@ function addEventHandlers() {
 		sendMessage("room-1", "dit is een message naar room 1");
 		sendMessage("room-2", "dit is een message naar room 2");
 		getConnectionInfo();
+		getHistory("room-1");
 		getClientCount("room-1");
 	});
 
@@ -117,13 +118,24 @@ function addEventHandlers() {
 	socket.on("client_count", (response) => {
 		console.log(response.room + " has " + response.numberOfClients + " clients connected");
 	});
+
+	// Fires after receiving the message history of a room.
+	socket.on("history", (response) => {
+		console.log("Message history for room " + response.room + ": " + response.history.length + " messages");
+	});
 }
 
 // Send a message to a room by emitting the "message" event and including the name of the room and your message.
 // You can only send messages after providing a username by emitting the "set_username" event & by having joined the
 // room you are sending the message to.
 function sendMessage(room, message) {
-	socket.emit("message", {room: room, content: message});
+	socket.emit("message", {
+		room: room,
+		content: message,
+		timestamp: Date.now(),
+		certificate: "cert here",
+		signature: "sig here"
+	});
 }
 
 // Before you can send messages, you need to provide a username.
@@ -152,4 +164,9 @@ function getConnectionInfo() {
 // Emit a "client_count" event to request the amount of connected clients of a given room you are in.
 function getClientCount(room) {
 	socket.emit("client_count", room);
+}
+
+// Emit a "history" event to request the message history of a room.
+function getHistory(room) {
+	socket.emit("history", room);
 }

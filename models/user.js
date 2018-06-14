@@ -2,9 +2,13 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
-	name: {
+	_id: {
 		type: String,
-		required: [true, 'A user must have a name.']
+		alias: 'name'
+	},
+	certificate: {
+		type: JSON,
+		required: [true, 'A user must have a certificate.']
 	},
 	messages: [{
 		type: Schema.Types.ObjectId,

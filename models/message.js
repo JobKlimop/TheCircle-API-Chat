@@ -7,12 +7,12 @@ const MessageSchema = new Schema({
 		required: [true, 'A comment must have content.']
 	},
 	user: {
-		type: Schema.Types.ObjectId,
+		type: Schema.Types.String,
 		ref: 'user',
 		required: [true, 'A message must have an author.']
 	},
 	chatroom: {
-		type: Schema.Types.ObjectId,
+		type: Schema.Types.String,
 		ref: 'chatroom',
 		required: [true, 'A message must have a chatroom.']
 	},

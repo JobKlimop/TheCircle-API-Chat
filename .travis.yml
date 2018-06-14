@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+  - "7"
+services:
+  - redis-server
+  - mongodb
+before_script:
+  - npm run travis
