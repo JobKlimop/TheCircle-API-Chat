@@ -1,5 +1,5 @@
 const host = "ws://localhost:3000";
-//const host = "ws://the-circle-chat.herokuapp.com/";
+// const host = "ws://the-circle-chat.herokuapp.com/";
 
 // Connect to socket.io server.
 let socket = require("socket.io-client")(host, {
