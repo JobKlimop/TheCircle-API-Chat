@@ -34,7 +34,7 @@ describe('Event Tests', () => {
 	it('Client should receive a username_set event after setting a username', (done) => {
 		socket.emit('set_username', username);
 		socket.on('username_set', (setUsername) => {
-			assert(setUsername === username);
+			assert(setUsername === username, "wrong user");
 			done();
 		});
 	});
@@ -42,7 +42,7 @@ describe('Event Tests', () => {
 	it('Client should receive a room_joined event after joining a room', (done) => {
 		socket.emit('join_room', room);
 		socket.on('room_joined', (joinedRoom) => {
-			assert(joinedRoom === room);
+			assert(joinedRoom === room, "wrong room");
 			done();
 		});
 	});
@@ -51,7 +51,7 @@ describe('Event Tests', () => {
 		socket.emit('join_room', room);
 		socket.emit('leave_room', room);
 		socket.on('room_left', (leftRoom) => {
-			assert(leftRoom === room);
+			assert(leftRoom === room, "wrong room");
 			done();
 		});
 	});
@@ -60,8 +60,8 @@ describe('Event Tests', () => {
 		socket.emit('join_room', room);
 		socket.emit('client_count', room);
 		socket.on('client_count', (response) => {
-			assert(response.room === room);
-			assert(response.numberOfClients === 1);
+			assert(response.room === room, "wrong room");
+			assert(response.numberOfClients === 1, "wrong number of clients");
 			done();
 		});
 	});
@@ -71,9 +71,9 @@ describe('Event Tests', () => {
 		socket.emit('join_room', room);
 		socket.emit('connection_info');
 		socket.on('connection_info', (info) => {
-			assert(info.user === username);
-			assert(info.rooms[0] === room);
-			assert(info.rooms[1] === undefined);
+			assert(info.user === username, "wrong user");
+			assert(info.rooms[0] === room, "wrong room");
+			assert(info.rooms[1] === undefined, "second room should be undefined");
 			done();
 		});
 	});
