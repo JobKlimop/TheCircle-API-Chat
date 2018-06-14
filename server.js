@@ -9,6 +9,11 @@ const sticky = require('sticky-session');
 const fs = require('fs');
 const winston = require('./logging.js');
 const env = require('./env.js').environment;
+const con = require('./env.js').mainDbConnectionUrl;
+const mongoose = require('mongoose');
+const createUser = require('./database-controls/create_user');
+const createChatroom = require('./database-controls/create_chatroom');
+const saveMessage = require('./database-controls/save_message');
 
 const server = http.createServer((req, res) => {
 	fs.readFile('the-circle.html', (err, data) => {
@@ -27,6 +32,15 @@ if (!sticky.listen(server, env.port)) {
 } else {
 	// Worker code
 	const io = socketio(server);
+
+	mongoose.connect(con);
+	mongoose.connection
+		.once('open', () => {
+			console.log('Server connected to ' + con + ' on worker ' + cluster.worker.id);
+		})
+		.on('error', (error) => {
+			console.warn('Warning', error.toString());
+		});
 
 	if (process.env.NODE_ENV === 'development' || 'test') {
 		io.adapter(redisAdapter({host: env.redisHost, port: env.redisPort}));
@@ -58,6 +72,11 @@ if (!sticky.listen(server, env.port)) {
 		socket.on('set_username', (username) => {
 			user = username;
 			socket.emit('username_set', user);
+			createUser(username, {placeholder: 'placeholder'})
+				.then(() => {})
+				.catch((error) => {
+					console.log('Creating user failed with error response --> ' + error);
+				});
 			winston.log(
 				'info',
 				(user || '[SocketID ' + socket.id + ']') + ' changed their username to ' + username,
@@ -76,6 +95,16 @@ if (!sticky.listen(server, env.port)) {
 					(user || '[SocketID ' + socket.id + ']') + ' joined room ' + room,
 					getConnectionInfo()
 				);
+				createUser(room, {placeholder: 'placeholder'})
+					.then(() => {})
+					.catch((error) => {
+						console.log('Creating user failed with error response --> ' + error );
+					});
+				createChatroom(room)
+					.then(() => {})
+					.catch((error) => {
+						console.log('Creating chatroom failed with error response --> ' + error);
+					});
 			}
 		});
 
@@ -105,6 +134,11 @@ if (!sticky.listen(server, env.port)) {
 				};
 				console.log(obj);
 				io.in(msg.room).emit('message', obj);
+				saveMessage(msg.content, user, msg.room, msg.timestamp, msg.signature)
+					.then(() => {})
+					.catch((error) => {
+						console.log('Saving message failed with error response --> ' + error);
+					});
 				winston.log(
 					'info',
 					'Received message from ' + (user || '[SocketID ' + socket.id + ']') + ' for room ' + msg.room,

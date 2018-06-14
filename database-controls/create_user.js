@@ -1,7 +1,7 @@
 const User = require('../models/user');
-let newUser = {name: '', certificate: {}, messages: []};
 
 function createUser(name, certificate) {
+	let newUser = {name: '', certificate: {}, messages: []};
 	newUser.name = name;
 	newUser.certificate = certificate;
 

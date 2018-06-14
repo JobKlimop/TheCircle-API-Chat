@@ -1,7 +1,7 @@
 const Chatroom = require('../models/chatroom');
-let newChatroom = {owner: '', messages: []};
 
 function createChatroom(owner) {
+	let newChatroom = {owner: '', messages: []};
 	newChatroom.owner = owner;
 
 	return new Promise((resolve, reject) => {
