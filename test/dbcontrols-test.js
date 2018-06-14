@@ -11,18 +11,18 @@ const connection = require('../env.js').mainDbConnectionUrl;
 
 mongoose.Promise = global.Promise;
 
-before((done) => {
-	mongoose.connect(connection);
-	mongoose.connection
-		.once('open', () => {
-			done();
-		})
-		.on('error', (error) => {
-			console.warn('Warning', error.toString());
-		});
-});
-
 describe('Database-controls', () => {
+	before((done) => {
+		mongoose.connect(connection);
+		mongoose.connection
+			.once('open', () => {
+				done();
+			})
+			.on('error', (error) => {
+				console.warn('Warning', error.toString());
+			});
+	});
+
 	beforeEach((done) => {
 		const { users, messages, chatrooms } = mongoose.connection.collections;
 
@@ -35,6 +35,30 @@ describe('Database-controls', () => {
 			})
 			.then(() => {
 				done();
+			})
+			.catch((error) => {
+				done(error);
+			});
+	});
+
+	after((done) => {
+		const { users, messages, chatrooms } = mongoose.connection.collections;
+
+		messages.remove({})
+			.then(() => {
+				return chatrooms.remove({});
+			})
+			.then(() => {
+				return users.remove({});
+			})
+			.then(() => {
+				mongoose.disconnect()
+					.then(() => {
+						done();
+					})
+					.catch((error) => {
+						console.log(error);
+					});
 			})
 			.catch((error) => {
 				done(error);
@@ -96,8 +120,8 @@ describe('Database-controls', () => {
 			})
 	});
 
-	it('should return the chatroom with given owner if already exists when creating.', (done) => {
-		Chatroom.create({owner: 'TestingRoom123', messages: []})
+	it('should return the chatroom with given roomOwner if already exists when creating.', (done) => {
+		Chatroom.create({roomOwner: 'TestingRoom123', messages: []})
 			.then(() => {
 				createChatroom('TestingRoom123')
 					.then((retrievedChatroom) => {
@@ -119,7 +143,7 @@ describe('Database-controls', () => {
 
 		User.create({name: 'TestingUser123', certificate: {certificate: ''}})
 			.then(() => {
-				return Chatroom.create({owner: 'TestingRoom123'});
+				return Chatroom.create({roomOwner: 'TestingRoom123'});
 			})
 			.then(() => {
 				return saveMessage('Testing message content...', 'TestingUser123', 'TestingRoom123', currentDate,

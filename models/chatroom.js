@@ -5,7 +5,7 @@ const ChatroomSchema = new Schema({
 	_id: {
 		type: Schema.Types.String,
 		ref: 'user',
-		alias: 'owner'
+		alias: 'roomOwner'
 	},
 	messages: [{
 		type: Schema.Types.ObjectId,
