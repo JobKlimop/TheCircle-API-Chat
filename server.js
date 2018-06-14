@@ -28,7 +28,7 @@ if (!sticky.listen(server, env.port)) {
 	// Worker code
 	const io = socketio(server);
 
-	if (process.env.NODE_ENV === 'development' || 'test') {
+	if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
 		io.adapter(redisAdapter({host: env.redisHost, port: env.redisPort}));
 	} else if (process.env.NODE_ENV === 'production') {
 		const pub = redis.createClient(env.redisPort, env.redisHost, {auth_pass: env.redisPass});
