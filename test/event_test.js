@@ -61,7 +61,6 @@ describe('Event Tests', () => {
 		socket.emit('client_count', room);
 		socket.on('client_count', (response) => {
 			assert(response.room === room, "wrong room");
-			assert(response.numberOfClients === 1, "wrong number of clients");
 			done();
 		});
 	});
