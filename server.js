@@ -22,6 +22,7 @@ if (!sticky.listen(server, env.port)) {
 	// Master code
 	server.once('listening', () => {
 		console.log('server started on port ' + env.port);
+		console.log('NODE_ENV: ' + process.env.NODE_ENV);
 	});
 } else {
 	// Worker code

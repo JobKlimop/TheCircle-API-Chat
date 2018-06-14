@@ -7,14 +7,14 @@ const createChatroom = require('../database-controls/create_chatroom');
 const saveMessage = require('../database-controls/save_message');
 const User = require('../models/user');
 const Chatroom = require('../models/chatroom');
+const connection = require('../env.js').mainDbConnectionUrl;
 
 mongoose.Promise = global.Promise;
 
 before((done) => {
-	mongoose.connect('mongodb://Admin:AdminTC123@ds255970.mlab.com:55970/thecircle_chat_test');
+	mongoose.connect(connection);
 	mongoose.connection
 		.once('open', () => {
-			console.log('Connected to MongoDB testing database hosted on mLab.');
 			done();
 		})
 		.on('error', (error) => {

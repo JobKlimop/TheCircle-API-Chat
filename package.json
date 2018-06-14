@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "mocha",
+    "test": "mocha --exit",
     "dev": "set NODE_ENV=development&& nodemon server.js",
     "dev_debug": "set NODE_ENV=development&& set DEBUG=*&& nodemon server.js",
     "dev_debug_socket": "set NODE_ENV=development&& set DEBUG=socket.io:socket*&& nodemon server.js",
