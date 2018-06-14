@@ -6,4 +6,3 @@ services:
   - mongodb
 before_script:
   - npm run travis
-  

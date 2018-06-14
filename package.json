@@ -9,7 +9,7 @@
     "dev": "set NODE_ENV=development&& nodemon server.js",
     "dev_debug": "set NODE_ENV=development&& set DEBUG=*&& nodemon server.js",
     "dev_debug_socket": "set NODE_ENV=development&& set DEBUG=socket.io:socket*&& nodemon server.js",
-    "travis": "NODE_ENV=test & node server.js &"
+    "travis": "NODE_ENV=test node server.js &"
   },
   "repository": {
     "type": "git",
