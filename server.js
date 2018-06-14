@@ -103,7 +103,6 @@ if (!sticky.listen(server, env.port)) {
 					certificate: msg.certificate,
 					signature: msg.signature
 				};
-				console.log(obj);
 				io.in(msg.room).emit('message', obj);
 				winston.log(
 					'info',
