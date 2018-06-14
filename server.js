@@ -98,9 +98,12 @@ if (!sticky.listen(server, env.port)) {
 				const obj = {
 					user: user,
 					room: msg.room,
-					timestamp: Date.now(),
-					content: msg.content
+					timestamp: msg.timestamp,
+					content: msg.content,
+					certificate: msg.certificate,
+					signature: msg.signature
 				};
+				console.log(obj);
 				io.in(msg.room).emit('message', obj);
 				winston.log(
 					'info',
@@ -120,6 +123,19 @@ if (!sticky.listen(server, env.port)) {
 					};
 					socket.emit('client_count', obj);
 				});
+			}
+		});
+
+		socket.on('history', (room) => {
+			const index = rooms.indexOf(room);
+			if (index > -1) {
+				//TODO get history from MongoDB
+				let history = [];
+				const obj = {
+					room: room,
+					history: history
+				};
+				socket.emit('history', obj);
 			}
 		});
 	});
