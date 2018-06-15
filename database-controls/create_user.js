@@ -6,16 +6,19 @@ function createUser(name, certificate) {
 	newUser.certificate = certificate;
 
 	return new Promise((resolve, reject) => {
-		User.findById(name)
-			.then((dbUser) => {
-				if (dbUser === null) {
-					return User.create(newUser);
+		User.create(newUser)
+			.then((createdUser) => {
+				resolve(createdUser);
+			})
+			.catch((error) => {
+				if (error.code !== 11000) {
+					reject(error);
 				} else {
-					return dbUser;
+					return User.findById(name);
 				}
 			})
-			.then((dbUser) => {
-				resolve(dbUser);
+			.then((retrievedUser) => {
+				resolve(retrievedUser);
 			})
 			.catch((error) => {
 				reject(error);

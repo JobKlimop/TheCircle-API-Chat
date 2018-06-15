@@ -66,7 +66,7 @@ describe('Database-controls', () => {
 	});
 
 	it('should save a user successfully.', (done) => {
-		User.findOne({_id: 'TestingUser123'})
+		User.findById('TestingUser123')
 			.then((dbResponse) => {
 				assert(dbResponse === null);
 				createUser('TestingUser123', {certificate: 'A4LS2#$lPQ99))2AVB'})
@@ -103,7 +103,7 @@ describe('Database-controls', () => {
 	});
 
 	it('should save a chatroom succesfully.', (done) => {
-		Chatroom.findOne({_id: 'TestingRoom123'})
+		Chatroom.findById('TestingRoom123')
 			.then((dbResponse) => {
 				assert(dbResponse === null);
 				createChatroom('TestingRoom123')
