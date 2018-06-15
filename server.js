@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 const createUser = require('./database-controls/create_user');
 const createChatroom = require('./database-controls/create_chatroom');
 const saveMessage = require('./database-controls/save_message');
+const getHistory = require('./database-controls/get_history');
 
 const server = http.createServer((req, res) => {
 	fs.readFile('the-circle.html', (err, data) => {
@@ -163,13 +164,16 @@ if (!sticky.listen(server, env.port)) {
 		socket.on('history', (room) => {
 			const index = rooms.indexOf(room);
 			if (index > -1) {
-				//TODO get history from MongoDB
 				let history = [];
-				const obj = {
-					room: room,
-					history: history
-				};
-				socket.emit('history', obj);
+				getHistory(room)
+					.then((retrievedMessages) => {
+						history = retrievedMessages;
+						let obj = {
+							room: room,
+							history: history
+						};
+						socket.emit('history', obj);
+					});
 			}
 		});
 	});
