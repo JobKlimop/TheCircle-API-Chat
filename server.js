@@ -50,6 +50,10 @@ if (!sticky.listen(server, env.port)) {
 			};
 		}
 
+		socket.on('authenticate', (auth) => {
+			console.log(auth);
+		});
+
 		socket.on('connection_info', () => {
 			const info = getConnectionInfo();
 			socket.emit('connection_info', info);
