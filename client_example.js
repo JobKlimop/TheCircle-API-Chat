@@ -81,6 +81,10 @@ function addEventHandlers() {
 
 	// CUSTOM EVENTS
 
+	socket.on("identity_verified", (identity) => {
+		console.log(identity);
+	});
+
 	// Fires when receiving a message from the server.
 	// contains the room the message is meant for, the message sender & the message itself
 	socket.on("message", (message) => {
@@ -136,6 +140,12 @@ function sendMessage(room, message) {
 		certificate: "cert here",
 		signature: "sig here"
 	});
+}
+
+// Before you can send messages, you need to provide a username.
+// Do this by emitting the "set_username" event and sending your username.
+function verifyIdentity(username) {
+	socket.emit("verify_identity", username);
 }
 
 // Before you can send messages, you need to provide a username.
