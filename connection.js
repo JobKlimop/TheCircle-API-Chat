@@ -92,7 +92,7 @@ function onConnection(io, socket) {
 			io.in(msg.room).emit('message', obj);
 			winston.log(
 				'info',
-				'Received message from ' + (user || '[SocketID ' + socket.id + ']') + ' for room ' + msg.room,
+				'Received message from ' + (user || '[SocketID ' + socket.id + ']') + ' for room ' + msg.room + ': ' + msg.content,
 				getConnectionInfo()
 			);
 		}
