@@ -5,9 +5,12 @@ const assert = require('assert');
 const createUser = require('../database-controls/create_user');
 const createChatroom = require('../database-controls/create_chatroom');
 const saveMessage = require('../database-controls/save_message');
+const getHistory = require('../database-controls/get_history');
 const User = require('../models/user');
 const Chatroom = require('../models/chatroom');
+const Message = require('../models/message');
 const connection = require('../env.js').mainDbConnectionUrl;
+const moment = require('moment');
 
 mongoose.Promise = global.Promise;
 
@@ -24,7 +27,7 @@ describe('Database-controls', () => {
 	});
 
 	beforeEach((done) => {
-		const { users, messages, chatrooms } = mongoose.connection.collections;
+		const {users, messages, chatrooms} = mongoose.connection.collections;
 
 		messages.remove({})
 			.then(() => {
@@ -42,7 +45,7 @@ describe('Database-controls', () => {
 	});
 
 	after((done) => {
-		const { users, messages, chatrooms } = mongoose.connection.collections;
+		const {users, messages, chatrooms} = mongoose.connection.collections;
 
 		messages.remove({})
 			.then(() => {
@@ -165,5 +168,46 @@ describe('Database-controls', () => {
 			.catch((error) => {
 				console.log(error);
 			});
+	});
+
+	it('should return 10 messages when connecting to a room.', function (done) {
+		this.timeout(10000);
+
+		let now;
+		let testMessageArray = [];
+		let chatroom;
+
+		for (let i = 0; i <= 14; i++) {
+			let testMessage = {content: '...', user: 'Test', chatroom: 'Test', timestamp: Date.now(), signature: 'Signature...'};
+			if (i === 14) {
+				now = new Date(moment().add(i, 'seconds').format());
+			}
+			testMessage.timestamp = moment().add(i, 'seconds').format();
+			testMessageArray.push(testMessage);
+		}
+
+		Chatroom.create({roomOwner: "Test", messages: []})
+			.then((createdChatroom) => {
+				chatroom = createdChatroom;
+				return Message.create(testMessageArray);
+			})
+			.then((createdMessages) => {
+				for (let i = 0; i <= 14; i++) {
+					chatroom.messages.push(createdMessages[i]);
+				}
+				return chatroom.save();
+			})
+			.then(() => {
+				return getHistory(chatroom._id);
+			})
+			.then((history) => {
+				assert(history.length === 10);
+				assert(history[0].timestamp.getTime() === now.getTime());
+				assert(history[0].timestamp.getTime() > history[9].timestamp.getTime());
+				done();
+			})
+			.catch((error) => {
+				console.log(error);
+			})
 	});
 });
