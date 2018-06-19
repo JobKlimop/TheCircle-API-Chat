@@ -1,12 +1,27 @@
 const winston = require('./logging.js');
 const env = require('./env.js').environment;
 const verify = require('./verify.js');
+const connectionString = require('./env.js').mainDbConnectionUrl;
+const mongoose = require('mongoose');
+const createUser = require('./database-controls/create_user');
+const createChatroom = require('./database-controls/create_chatroom');
+const saveMessage = require('./database-controls/save_message');
+const getHistory = require('./database-controls/get_history');
 
 function onConnection(io, socket) {
 	let verified = false;
 	let identity = false;
 	let user = false;
 	let rooms = [];
+
+	mongoose.connect(connectionString);
+	mongoose.connection
+		.once('open', () => {
+			console.log('Server connected to ' + connectionString + '');
+		})
+		.on('error', (error) => {
+			console.warn('Warning', error.toString());
+		});
 
 	function getConnectionInfo() {
 		return {
@@ -25,6 +40,11 @@ function onConnection(io, socket) {
 			if (verified) {
 				identity = verify.getIdentityFromCert(obj.certificate);
 				if (identity.commonName) user = identity.commonName;
+				createUser(identity.commonName, obj.certificate)
+					.then(() => {})
+					.catch((error) => {
+						console.log('Creating user failed with error response --> ' + error);
+					});
 				winston.log(
 					'info',
 					(user || '[SocketID ' + socket.id + ']') + ' verified their identity: ' + identity,
@@ -57,6 +77,16 @@ function onConnection(io, socket) {
 			socket.join(room);
 			rooms.push(room);
 			socket.emit('room_joined', room);
+			createUser(room, {placeholder: 'placeholder'})
+				.then(() => {})
+				.catch((error) => {
+					console.log('Creating user failed with error response --> ' + error );
+				});
+			createChatroom(room)
+				.then(() => {})
+				.catch((error) => {
+					console.log('Creating chatroom failed with error response --> ' + error);
+				});
 			winston.log(
 				'info',
 				(user || '[SocketID ' + socket.id + ']') + ' joined room ' + room,
@@ -90,6 +120,11 @@ function onConnection(io, socket) {
 				signature: msg.signature
 			};
 			io.in(msg.room).emit('message', obj);
+			saveMessage(msg.content, user, msg.room, msg.timestamp, msg.signature)
+				.then(() => {})
+				.catch((error) => {
+					console.log('Saving message failed with error response --> ' + error);
+				});
 			winston.log(
 				'info',
 				'Received message from ' + (user || '[SocketID ' + socket.id + ']') + ' for room ' + msg.room + ': ' + msg.content,
@@ -114,13 +149,16 @@ function onConnection(io, socket) {
 	socket.on('history', (room) => {
 		const index = rooms.indexOf(room);
 		if (index > -1 && verified) {
-			//TODO get history from MongoDB
 			let history = [];
-			const obj = {
-				room: room,
-				history: history
-			};
-			socket.emit('history', obj);
+			getHistory(room)
+				.then((retrievedMessages) => {
+					history = retrievedMessages;
+					let obj = {
+						room: room,
+						history: history
+					};
+					socket.emit('history', obj);
+				});
 		}
 	});
 }

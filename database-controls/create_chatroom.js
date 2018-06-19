@@ -1,20 +1,23 @@
 const Chatroom = require('../models/chatroom');
-let newChatroom = {owner: '', messages: []};
 
-function createChatroom(owner) {
-	newChatroom.owner = owner;
+function createChatroom(roomOwner) {
+	let newChatroom = {roomOwner: '', messages: []};
+	newChatroom.roomOwner = roomOwner;
 
 	return new Promise((resolve, reject) => {
-		Chatroom.findById(owner)
-			.then((dbChatroom) => {
-				if (dbChatroom === null) {
-					return Chatroom.create(newChatroom);
+		Chatroom.create(newChatroom)
+			.then((createdChatroom) => {
+				resolve(createdChatroom);
+			})
+			.catch((error) => {
+				if (error.code !== 11000) {
+					reject(error);
 				} else {
-					return dbChatroom;
+					return Chatroom.findById(roomOwner);
 				}
 			})
-			.then((dbChatroom) => {
-				resolve(dbChatroom);
+			.then((retrievedChatroom) => {
+				resolve(retrievedChatroom);
 			})
 			.catch((error) => {
 				reject(error);
