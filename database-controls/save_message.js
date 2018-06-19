@@ -1,10 +1,10 @@
 const Message = require('../models/message');
 const User = require('../models/user');
 const Chatroom = require('../models/chatroom');
-let newMessage = {content: '', user: '', chatroom: '', timestamp: Date.now(), signature: ''};
-let _createdMessage;
 
 function saveMessage(content, user, chatroom, timestamp, signature) {
+	let newMessage = {content: '', user: '', chatroom: '', timestamp: Date.now(), signature: ''};
+	let _createdMessage;
 	newMessage.content = content;
 	newMessage.user = user;
 	newMessage.chatroom = chatroom;
