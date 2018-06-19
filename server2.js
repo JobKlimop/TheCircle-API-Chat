@@ -18,6 +18,7 @@ require('sticky-cluster')(
 	function (callback) {
 		const server = http.createServer(app);
 		const io = socketio(server);
+		io.set('transports', ['websocket']);
 
 		if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
 			io.adapter(redisAdapter({host: env.redisHost, port: env.redisPort}));

@@ -35,23 +35,29 @@ function onConnection(io, socket) {
 	}
 
 	socket.on('verify_identity', (obj) => {
-		if (!verified) {
-			verified = verify.verifyUserCert(obj.certificate);
-			if (verified) {
-				identity = verify.getIdentityFromCert(obj.certificate);
-				if (identity.commonName) user = identity.commonName;
+		verify.verifyUserCert(obj.certificate)
+			.then((result) => {
+				verified = result;
+				if (result === true) {
+					identity = verify.getIdentityFromCert(obj.certificate);
+					if (identity.commonName) user = identity.commonName;
+					socket.emit('verified', true);
 				createUser(identity.commonName, obj.certificate)
-					.then(() => {})
 					.catch((error) => {
 						console.log('Creating user failed with error response --> ' + error);
 					});
-				winston.log(
-					'info',
-					(user || '[SocketID ' + socket.id + ']') + ' verified their identity: ' + identity,
-					getConnectionInfo()
-				);
-			}
-		}
+					winston.log(
+						'info',
+						(user || '[SocketID ' + socket.id + ']') + ' verified their identity: ' + identity,
+						getConnectionInfo()
+					);
+				} else {
+					socket.emit('verified', false);
+				}
+			})
+			.catch((error) => {
+				console.log(error);
+			});
 	});
 
 	socket.on('connection_info', () => {
