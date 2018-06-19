@@ -5,12 +5,13 @@ const assert = require('assert');
 
 let socket;
 
-describe('Event Tests', () => {
+xdescribe('Event Tests', () => {
 	beforeEach((done) => {
 		socket = io.connect('http://localhost:3000', {
-			'reconnection delay': 0
-			, 'reopen delay': 0
-			, 'force new connection': true
+			'reconnection delay': 0,
+			'reopen delay': 0,
+			'force new connection': true,
+			transports: ['websocket']
 		});
 
 		socket.on('connect', () => {
