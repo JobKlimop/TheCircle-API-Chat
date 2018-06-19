@@ -42,10 +42,10 @@ function onConnection(io, socket) {
 					identity = verify.getIdentityFromCert(obj.certificate);
 					if (identity.commonName) user = identity.commonName;
 					socket.emit('verified', true);
-				createUser(identity.commonName, obj.certificate)
-					.catch((error) => {
-						console.log('Creating user failed with error response --> ' + error);
-					});
+					createUser(identity.commonName, obj.certificate)
+						.catch((error) => {
+							console.log('Creating user failed with error response --> ' + error);
+						});
 					winston.log(
 						'info',
 						(user || '[SocketID ' + socket.id + ']') + ' verified their identity: ' + identity,
@@ -67,16 +67,6 @@ function onConnection(io, socket) {
 		}
 	});
 
-	// socket.on('set_username', (username) => {
-	// 	user = username;
-	// 	socket.emit('username_set', user);
-	// 	winston.log(
-	// 		'info',
-	// 		(user || '[SocketID ' + socket.id + ']') + ' changed their username to ' + username,
-	// 		getConnectionInfo()
-	// 	);
-	// });
-
 	socket.on('join_room', (room) => {
 		const index = rooms.indexOf(room);
 		if (index === -1 && verified) {
@@ -84,12 +74,10 @@ function onConnection(io, socket) {
 			rooms.push(room);
 			socket.emit('room_joined', room);
 			createUser(room, {placeholder: 'placeholder'})
-				.then(() => {})
 				.catch((error) => {
-					console.log('Creating user failed with error response --> ' + error );
+					console.log('Creating user failed with error response --> ' + error);
 				});
 			createChatroom(room)
-				.then(() => {})
 				.catch((error) => {
 					console.log('Creating chatroom failed with error response --> ' + error);
 				});
@@ -127,7 +115,6 @@ function onConnection(io, socket) {
 			};
 			io.in(msg.room).emit('message', obj);
 			saveMessage(msg.content, user, msg.room, msg.timestamp, msg.signature)
-				.then(() => {})
 				.catch((error) => {
 					console.log('Saving message failed with error response --> ' + error);
 				});

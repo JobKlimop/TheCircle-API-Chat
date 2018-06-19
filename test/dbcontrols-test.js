@@ -22,7 +22,7 @@ before((done) => {
 		});
 });
 
-describe('Database-controls', () => {
+xdescribe('Database-controls', () => {
 	beforeEach((done) => {
 		const { users, messages, chatrooms } = mongoose.connection.collections;
 

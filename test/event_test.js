@@ -27,7 +27,7 @@ afterEach((done) => {
 	done();
 });
 
-describe('Event Tests', () => {
+xdescribe('Event Tests', () => {
 	const username = 'Test-User';
 	const room = 'test-room-1';
 
