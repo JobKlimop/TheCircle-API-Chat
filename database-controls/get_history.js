@@ -18,7 +18,7 @@ function getHistory(roomOwner) {
 						let object = {
 							user: m.user._id,
 							room: m.room,
-							timestamp: m.timestamp,
+							timestamp: m.timestamp.getTime(),
 							content: m.content,
 							certificate: m.user.certificate,
 							signature: m.signature
