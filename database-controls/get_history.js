@@ -12,7 +12,20 @@ function getHistory(roomOwner) {
 				}
 			})
 			.then((retrievedChatroom) => {
-				resolve(retrievedChatroom.messages);
+				let messageArray = [];
+				for (let i = 0; i < retrievedChatroom.messages.length; i++) {
+					const m = retrievedChatroom.messages[i];
+						let object = {
+							user: m.user._id,
+							room: m.room,
+							timestamp: m.timestamp,
+							content: m.content,
+							certificate: m.user.certificate,
+							signature: m.signature
+						};
+						messageArray.push(object)
+					}
+				resolve(messageArray);
 			})
 			.catch((error) => {
 				reject(error);
