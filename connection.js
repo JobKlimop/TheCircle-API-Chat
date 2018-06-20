@@ -61,10 +61,8 @@ function onConnection(io, socket) {
 	});
 
 	socket.on('connection_info', () => {
-		if (verified) {
-			const info = getConnectionInfo();
-			socket.emit('connection_info', info);
-		}
+		const info = getConnectionInfo();
+		socket.emit('connection_info', info);
 	});
 
 	socket.on('join_room', (room) => {
