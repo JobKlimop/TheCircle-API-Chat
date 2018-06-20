@@ -5,7 +5,11 @@ function getHistory(roomOwner) {
 		Chatroom.findById(roomOwner)
 			.populate({
 				path: 'messages',
-				options: { limit: 10, sort: '-timestamp'}
+				options: { limit: 10, sort: '-timestamp'},
+				populate: {
+					path: 'user',
+					select: 'certificate'
+				}
 			})
 			.then((retrievedChatroom) => {
 				resolve(retrievedChatroom.messages);

@@ -60,10 +60,6 @@ function onConnection(io, socket) {
 			socket.join(room);
 			rooms.push(room);
 			socket.emit('room_joined', room);
-			createUser(room, {placeholder: 'placeholder'})
-				.catch((error) => {
-					console.log('Creating user failed with error response --> ' + error);
-				});
 			createChatroom(room)
 				.catch((error) => {
 					console.log('Creating chatroom failed with error response --> ' + error);
