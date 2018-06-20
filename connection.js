@@ -1,8 +1,6 @@
 const winston = require('./logging.js');
 const env = require('./env.js').environment;
 const verify = require('./verify.js');
-const connectionString = require('./env.js').mainDbConnectionUrl;
-const mongoose = require('mongoose');
 const createUser = require('./database-controls/create_user');
 const createChatroom = require('./database-controls/create_chatroom');
 const saveMessage = require('./database-controls/save_message');
@@ -13,15 +11,6 @@ function onConnection(io, socket) {
 	let identity = false;
 	let user = false;
 	let rooms = [];
-
-	mongoose.connect(connectionString);
-	mongoose.connection
-		.once('open', () => {
-			console.log('Server connected to ' + connectionString + '');
-		})
-		.on('error', (error) => {
-			console.warn('Warning', error.toString());
-		});
 
 	function getConnectionInfo() {
 		return {
