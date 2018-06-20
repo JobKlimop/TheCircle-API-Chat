@@ -33,7 +33,7 @@ function onConnection(io, socket) {
 					socket.emit('verified', true);
 					createUser(identity.commonName, obj.certificate)
 						.catch((error) => {
-							console.log('Creating user failed with error response --> ' + error);
+							//console.log('Creating user failed with error response --> ' + error);
 						});
 					winston.log(
 						'info',
