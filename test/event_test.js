@@ -32,6 +32,16 @@ const userCert = '-----BEGIN CERTIFICATE-----\r\n' +
 	'JtUaRoJgFS+T93/EOC/5t8+XP6UwlV3VgoyVhNShS5KnohDLNw0AU31Y+QO/pQ3T\r\n' +
 	'8braAYT+a2VzsKyEKkWIyDFP4g7WYQ8X+sNigyaRavAaqjmhVcAt9GyRA7m94SCg\r\n' +
 	'-----END CERTIFICATE-----\r\n';
+const signature = '630a02809afc4935b7d32a9a6757d508c48e676585923152966a1c' +
+	'fcad8df97712878d84caa018a21d2258dd893901e43c5f5240b9b3eb63e521628300' +
+	'b77c7a4d618a5bad402f3d841d7669869d47ae4ab2e5bb101e10ff9a0d184cbf22e5' +
+	'03859df3734e7997931f2ee457d7890cd48dfa344b7876d25ad6ce0146cb0b96ddff' +
+	'cd6fdc3e1402431a92c72f17a380e113d8273b95a6fe0b06d583f5c4346b7fa93ff4' +
+	'14da2611519267c73cfcd309771d48488f86a9476e71a87fce84c606ed263576cb8c' +
+	'7180a1eb85f8c371a28b94140d48263dd601dd76fa6c7a0783d4592d7ea3424837d2' +
+	'b9410dc204776cb91c5f36bcc3ff5a826120bcc61039ddf692';
+const timestamp = 1529495763;
+const content = 'sdfsdf';
 
 describe('Event Tests', () => {
 	beforeEach((done) => {
@@ -89,7 +99,6 @@ describe('Event Tests', () => {
 	});
 
 	it('Client should receive a connection_info event after requesting connection info', (done) => {
-		socket.emit('set_username', username);
 		socket.emit('join_room', room);
 		socket.emit('connection_info');
 		socket.on('connection_info', (info) => {
@@ -101,14 +110,10 @@ describe('Event Tests', () => {
 	});
 
 	it('Client should receive messages', (done) => {
-		const content = "testing";
-		const certificate = "cert";
-		const signature = "sig";
-		const timestamp = Date.now();
 		const msg = {
 			room: room,
 			content: content,
-			certificate: certificate,
+			certificate: userCert,
 			signature: signature,
 			timestamp: timestamp
 		};
@@ -119,7 +124,7 @@ describe('Event Tests', () => {
 			assert(msg.user === username, "wrong user");
 			assert(msg.room === room, "wrong room");
 			assert(msg.content === content, "wrong content");
-			assert(msg.certificate === certificate, "wrong certificate");
+			assert(msg.certificate === userCert, "wrong certificate");
 			assert(msg.signature === signature, "wrong signature");
 			assert(msg.timestamp === timestamp, "wrong timestamp");
 			done();

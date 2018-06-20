@@ -37,7 +37,7 @@ function onConnection(io, socket) {
 						});
 					winston.log(
 						'info',
-						(user || '[SocketID ' + socket.id + ']') + ' verified their identity: ' + identity,
+						(user || '[SocketID ' + socket.id + ']') + ' verified their identity',
 						getConnectionInfo()
 					);
 				} else {
@@ -87,7 +87,9 @@ function onConnection(io, socket) {
 
 	socket.on('message', (msg) => {
 		const index = rooms.indexOf(msg.room);
-		if (index > -1 && verified) {
+		const data = verify.hashMessage(msg.content, msg.timestamp);
+		const integrity = verify.verifySignature(data, msg.signature, msg.certificate);
+		if (index > -1 && verified && integrity) {
 			const obj = {
 				user: user,
 				room: msg.room,

@@ -3,6 +3,7 @@
 const forge = require('node-forge');
 const fs = require('fs');
 const crypto = require('crypto');
+const jsrsa = require('jsrsasign');
 
 const pki = forge.pki;
 
@@ -34,15 +35,22 @@ function getIdentityFromCert(cert) {
 	};
 }
 
-function verifySignature(data, signature, cert) {
-	const verify = crypto.createVerify('SHA256withRSA');
+function hashMessage(content, timestamp) {
+	const hash = crypto.createHash('sha256');
+	hash.update(content + timestamp);
+	return hash.digest('hex');
+}
 
-	verify.update(data);
-	return verify.verify(cert, signature);
+function verifySignature(data, signature, cert) {
+	const sig = new jsrsa.KJUR.crypto.Signature({'alg': 'SHA256withRSA'});
+	sig.init(cert);
+	sig.updateString(data);
+	return sig.verify(signature);
 }
 
 module.exports = {
 	verifyUserCert,
 	getIdentityFromCert,
-	verifySignature
+	verifySignature,
+	hashMessage
 };

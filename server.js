@@ -33,7 +33,7 @@ require('sticky-cluster')(
 		mongoose.connect(connectionString);
 		mongoose.connection
 			.once('open', () => {
-				console.log('Server connected to ' + connectionString + '');
+				//console.log('Server connected to ' + connectionString + '');
 			})
 			.on('error', (error) => {
 				console.warn('Warning', error.toString());
