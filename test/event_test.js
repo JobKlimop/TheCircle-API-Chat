@@ -44,7 +44,7 @@ const timestamp = 1529495763;
 const content = 'sdfsdf';
 
 describe('Event Tests', function ()  {
-	this.timeout(10000);
+	this.timeout(100000);
 
 	beforeEach((done) => {
 		socket = io.connect('http://localhost:3000', {
