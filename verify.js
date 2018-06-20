@@ -35,7 +35,8 @@ function getIdentityFromCert(cert) {
 }
 
 function verifySignature(data, signature, cert) {
-	const verify = crypto.createVerify('SHA256');
+	const verify = crypto.createVerify('SHA256withRSA');
+
 	verify.update(data);
 	return verify.verify(cert, signature);
 }
