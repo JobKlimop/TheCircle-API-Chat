@@ -43,10 +43,10 @@ const signature = '630a02809afc4935b7d32a9a6757d508c48e676585923152966a1c' +
 const timestamp = 1529495763;
 const content = 'sdfsdf';
 
-describe('Event Tests', () => {
-	beforeEach((done) => {
-		this.timeout(10000);
+describe('Event Tests', function ()  {
+	this.timeout(10000);
 
+	beforeEach((done) => {
 		socket = io.connect('http://localhost:3000', {
 			'reconnection delay': 0,
 			'reopen delay': 0,
