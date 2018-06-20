@@ -136,6 +136,9 @@ function onConnection(io, socket) {
 						history: history
 					};
 					socket.emit('history', obj);
+				})
+				.catch((error) => {
+					console.error(error);
 				});
 		}
 	});
