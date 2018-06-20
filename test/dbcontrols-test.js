@@ -178,7 +178,7 @@ describe('Database-controls', () => {
 		let chatroom;
 
 		for (let i = 0; i <= 14; i++) {
-			let testMessage = {content: '...', user: 'Test', chatroom: 'Test', timestamp: Date.now(), signature: 'Signature...'};
+			let testMessage = {content: '...', user: 'TestUser', chatroom: 'TestRoom', timestamp: Date.now(), signature: 'Signature...'};
 			if (i === 14) {
 				now = new Date(moment().add(i, 'seconds').format());
 			}
@@ -186,9 +186,12 @@ describe('Database-controls', () => {
 			testMessageArray.push(testMessage);
 		}
 
-		Chatroom.create({roomOwner: "Test", messages: []})
+		Chatroom.create({roomOwner: "TestRoom", messages: []})
 			.then((createdChatroom) => {
 				chatroom = createdChatroom;
+				return User.create({name: 'TestUser', certificate: 'TestingCertificate'});
+			})
+			.then(() => {
 				return Message.create(testMessageArray);
 			})
 			.then((createdMessages) => {
@@ -202,8 +205,8 @@ describe('Database-controls', () => {
 			})
 			.then((history) => {
 				assert(history.length === 10);
-				assert(history[0].timestamp.getTime() === now.getTime());
-				assert(history[0].timestamp.getTime() > history[9].timestamp.getTime());
+				assert(history[0].timestamp === now.getTime());
+				assert(history[0].timestamp > history[9].timestamp);
 				done();
 			})
 			.catch((error) => {

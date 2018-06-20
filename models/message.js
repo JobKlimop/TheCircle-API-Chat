@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const MessageSchema = new Schema({
 	content: {
 		type: String,
-		required: [true, 'A comment must have content.']
+		required: [true, 'A message must have content.']
 	},
 	user: {
 		type: Schema.Types.String,
@@ -18,7 +18,7 @@ const MessageSchema = new Schema({
 	},
 	timestamp: {
 		type: Date,
-		required: [true, 'A comment must have a timestamp.']
+		required: [true, 'A message must have a timestamp.']
 	},
 	signature: {
 		type: String,

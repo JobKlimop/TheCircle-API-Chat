@@ -1,8 +1,6 @@
 const winston = require('./logging.js');
 const env = require('./env.js').environment;
 const verify = require('./verify.js');
-const connectionString = require('./env.js').mainDbConnectionUrl;
-const mongoose = require('mongoose');
 const createUser = require('./database-controls/create_user');
 const createChatroom = require('./database-controls/create_chatroom');
 const saveMessage = require('./database-controls/save_message');
@@ -13,15 +11,6 @@ function onConnection(io, socket) {
 	let identity = false;
 	let user = false;
 	let rooms = [];
-
-	mongoose.connect(connectionString);
-	mongoose.connection
-		.once('open', () => {
-			console.log('Server connected to ' + connectionString + '');
-		})
-		.on('error', (error) => {
-			console.warn('Warning', error.toString());
-		});
 
 	function getConnectionInfo() {
 		return {
@@ -44,11 +33,11 @@ function onConnection(io, socket) {
 					socket.emit('verified', true);
 					createUser(identity.commonName, obj.certificate)
 						.catch((error) => {
-							console.log('Creating user failed with error response --> ' + error);
+							//console.log('Creating user failed with error response --> ' + error);
 						});
 					winston.log(
 						'info',
-						(user || '[SocketID ' + socket.id + ']') + ' verified their identity: ' + identity,
+						(user || '[SocketID ' + socket.id + ']') + ' verified their identity',
 						getConnectionInfo()
 					);
 				} else {
@@ -71,10 +60,6 @@ function onConnection(io, socket) {
 			socket.join(room);
 			rooms.push(room);
 			socket.emit('room_joined', room);
-			createUser(room, {placeholder: 'placeholder'})
-				.catch((error) => {
-					console.log('Creating user failed with error response --> ' + error);
-				});
 			createChatroom(room)
 				.catch((error) => {
 					console.log('Creating chatroom failed with error response --> ' + error);
@@ -102,7 +87,9 @@ function onConnection(io, socket) {
 
 	socket.on('message', (msg) => {
 		const index = rooms.indexOf(msg.room);
-		if (index > -1 && verified) {
+		const data = verify.hashMessage(msg.content, msg.timestamp);
+		const integrity = verify.verifySignature(data, msg.signature, msg.certificate);
+		if (index > -1 && verified && integrity) {
 			const obj = {
 				user: user,
 				room: msg.room,
@@ -149,6 +136,9 @@ function onConnection(io, socket) {
 						history: history
 					};
 					socket.emit('history', obj);
+				})
+				.catch((error) => {
+					console.error(error);
 				});
 		}
 	});
