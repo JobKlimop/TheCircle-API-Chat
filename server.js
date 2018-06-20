@@ -13,7 +13,8 @@ const mongoose = require('mongoose');
 
 const options = {
 	port: env.port,
-	debug: true
+	debug: true,
+	errorHandler: function (err) { console.log(err); }
 };
 
 require('sticky-cluster')(
