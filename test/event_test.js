@@ -45,6 +45,8 @@ const content = 'sdfsdf';
 
 describe('Event Tests', () => {
 	beforeEach((done) => {
+		this.timeout(10000);
+
 		socket = io.connect('http://localhost:3000', {
 			'reconnection delay': 0,
 			'reopen delay': 0,
