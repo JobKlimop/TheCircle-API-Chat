@@ -18,7 +18,8 @@ const environment = {
 	logDbPort: process.env.LOGGING_PORT || 27017,
 	logDbPass: process.env.LOGGING_PASS || '',
 	logDbUser: process.env.LOGGING_USER || '',
-	logDbName: process.env.LOGGING_NAME || 'loggingdb'
+	logDbName: process.env.LOGGING_NAME || 'loggingdb',
+	workers: process.env.NUMBER_WORKERS || require('os').cpus().length
 };
 
 const mainDbConnectionUrl = process.env.NODE_ENV === 'production' ?
