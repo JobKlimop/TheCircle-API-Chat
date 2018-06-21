@@ -47,3 +47,7 @@ require('sticky-cluster')(
 		callback(server);
 	}, options
 );
+
+app.get('/', (req, res) => {
+	res.sendfile('./the-circle.html');
+});
