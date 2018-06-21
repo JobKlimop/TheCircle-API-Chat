@@ -17,6 +17,14 @@ const options = {
 	errorHandler: function (err) { console.log(err); }
 };
 
+if (process.env.NODE_ENV === 'test') {
+	options.concurrency = 1;
+} else {
+	if (require('os').cpus().length > env.workers){
+		options.concurrency = env.workers;
+	}
+}
+
 require('sticky-cluster')(
 	function (callback) {
 		const server = http.createServer(app);
