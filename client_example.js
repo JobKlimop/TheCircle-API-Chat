@@ -56,14 +56,21 @@ function addEventHandlers() {
 	socket.on("connect", () => {
 		console.log("Connected");
 		verifyIdentity(userCert);
-		joinRoom("room-1");
-		joinRoom("room-2");
-		leaveRoom("room-2");
-		sendMessage("room-1");
-		sendMessage("room-2");
-		getConnectionInfo();
-		getHistory("room-1");
-		getClientCount("room-1");
+	});
+
+	socket.on('verified', (verified) => {
+		if (verified) {
+			joinRoom("room-1");
+			joinRoom("room-2");
+			leaveRoom("room-2");
+			sendMessage("room-1");
+			sendMessage("room-2");
+			getConnectionInfo();
+			getHistory("room-1");
+			getClientCount("room-1");
+		} else {
+			console.log("not verified");
+		}
 	});
 
 	// Fires after a connection error.
