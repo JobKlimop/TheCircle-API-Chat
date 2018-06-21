@@ -64,9 +64,16 @@ function verifySignature(data, signature, cert) {
 	}
 }
 
+function messageFilter(content) {
+	// Match strings with only whitespace
+	const regex = /^[ \t\r\n\s]*$/gm;
+	return !new RegExp(regex).test(content);
+}
+
 module.exports = {
 	verifyUserCert,
 	getIdentityFromCert,
 	verifySignature,
-	hashMessage
+	hashMessage,
+	messageFilter
 };

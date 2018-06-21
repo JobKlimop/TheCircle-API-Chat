@@ -86,28 +86,30 @@ function onConnection(io, socket) {
 	});
 
 	socket.on('message', (msg) => {
-		const index = rooms.indexOf(msg.room);
-		const data = verify.hashMessage(msg.content, msg.timestamp);
-		const integrity = verify.verifySignature(data, msg.signature, msg.certificate);
-		if (index > -1 && verified && integrity) {
-			const obj = {
-				user: user,
-				room: msg.room,
-				timestamp: msg.timestamp,
-				content: msg.content,
-				certificate: msg.certificate,
-				signature: msg.signature
-			};
-			io.in(msg.room).emit('message', obj);
-			saveMessage(msg.content, user, msg.room, msg.timestamp, msg.signature)
-				.catch((error) => {
-					console.log('Saving message failed with error response --> ' + error);
-				});
-			winston.log(
-				'info',
-				'Received message from ' + (user || '[SocketID ' + socket.id + ']') + ' for room ' + msg.room + ': ' + msg.content,
-				getConnectionInfo()
-			);
+		if (verify.messageFilter(msg.content)) {
+			const index = rooms.indexOf(msg.room);
+			const data = verify.hashMessage(msg.content, msg.timestamp);
+			const integrity = verify.verifySignature(data, msg.signature, msg.certificate);
+			if (index > -1 && verified && integrity) {
+				const obj = {
+					user: user,
+					room: msg.room,
+					timestamp: msg.timestamp,
+					content: msg.content,
+					certificate: msg.certificate,
+					signature: msg.signature
+				};
+				io.in(msg.room).emit('message', obj);
+				saveMessage(msg.content, user, msg.room, msg.timestamp, msg.signature)
+					.catch((error) => {
+						console.log('Saving message failed with error response --> ' + error);
+					});
+				winston.log(
+					'info',
+					'Received message from ' + (user || '[SocketID ' + socket.id + ']') + ' for room ' + msg.room + ': ' + msg.content,
+					getConnectionInfo()
+				);
+			}
 		}
 	});
 
